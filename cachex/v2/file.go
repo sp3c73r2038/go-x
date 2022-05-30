@@ -1,11 +1,10 @@
 package cachex
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gadelkareem/cachita"
+	"github.com/pkg/errors"
 	// "snippet/common"
 )
 
@@ -26,7 +25,7 @@ func NewFileCache(
 	var store cachita.Cache
 	store, err = cachita.NewFileCache(dir, ttl, ticker)
 	if err != nil {
-		panic(fmt.Errorf("create filecache: %w", err))
+		panic(errors.Wrap(err, "create filecache"))
 	}
 
 	rv = &FileCache{
@@ -51,7 +50,6 @@ func (this *FileCache) Set(k string, v interface{}, opts ...Opt) (err error) {
 
 	v, err = this.base.Encode(v)
 	if err != nil {
-		err = fmt.Errorf("encode error: %w", err)
 		return
 	}
 
@@ -70,7 +68,7 @@ func (this *FileCache) Get(k string, opts ...Opt) (rv *CacheItem, err error) {
 			err = nil
 			return
 		} else {
-			err = fmt.Errorf("get filecache error: %w", err)
+			err = errors.Wrap(err, "filecache get error")
 			return
 		}
 	}
@@ -79,7 +77,6 @@ func (this *FileCache) Get(k string, opts ...Opt) (rv *CacheItem, err error) {
 	var v interface{}
 	v, err = this.base.Decode(b)
 	if err != nil {
-		err = fmt.Errorf("decode error: %w", err)
 		return
 	}
 	rv = &CacheItem{

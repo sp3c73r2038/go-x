@@ -9,7 +9,7 @@ import (
 	urllib "net/url"
 	"strings"
 
-	// "github.com/stretchr/testify/assert"
+	"github.com/pkg/errors"
 	"github.com/sp3c73r2038/go-x/httpx"
 )
 
@@ -58,7 +58,6 @@ func (this *SimpleHTTPClient) createReq(url string, option *ReqOptions) (rv *htt
 					var enc = json.NewEncoder(&buf)
 					err = enc.Encode(option.Object)
 					if err != nil {
-						fmt.Errorf("encode json: %w", err)
 						return
 					}
 
@@ -80,7 +79,7 @@ func (this *SimpleHTTPClient) createReq(url string, option *ReqOptions) (rv *htt
 
 	rv, err = http.NewRequest(option.Method, url, body)
 	if err != nil {
-		fmt.Errorf("create req: %w", err)
+		err = errors.Wrap(err, "create req")
 		return
 	}
 
@@ -126,13 +125,13 @@ func (this *SimpleHTTPClient) Do(
 
 	req, err = this.createReq(url, option)
 	if err != nil {
-		fmt.Errorf("create req: %w", err)
+		err = errors.Wrap(err, "create req")
 		return
 	}
 
 	resp, err = this.client.Do(req)
 	if err != nil {
-		fmt.Errorf("do req: %w", err)
+		err = errors.Wrap(err, "do req")
 		return
 	}
 

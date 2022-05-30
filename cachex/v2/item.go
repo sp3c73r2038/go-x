@@ -1,11 +1,10 @@
 package cachex
 
 import (
-	"fmt"
+	"encoding/json"
 	"time"
 
-	"encoding/json"
-
+	"github.com/pkg/errors"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -25,24 +24,23 @@ func (this *CacheItem) decode(rv interface{}) (err error) {
 		case []byte:
 			b = this.value.([]byte)
 		default:
-			err = fmt.Errorf("expect item value to be []byte, but got %s", t)
+			err = errors.Wrapf(err, "expect item value to be []byte, but got %s", t)
 			return
 		}
 		switch this.encoding {
 		case ENCODING_MSGPACK:
 			err = msgpack.Unmarshal(b, &rv)
 			if err != nil {
-				err = fmt.Errorf("msgpack decode : %w", err)
 				return
 			}
 		case ENCODING_JSON:
 			err = json.Unmarshal(b, &rv)
 			if err != nil {
-				err = fmt.Errorf("json decode: %w", err)
+				err = errors.Wrap(err, "json decode")
 				return
 			}
 		default:
-			err = fmt.Errorf("unsupported encoding: %s", this.encoding)
+			err = errors.Wrapf(err, "unsupported encoding: %s", this.encoding)
 		}
 	}
 	return
@@ -57,7 +55,6 @@ func (this *CacheItem) Int() int {
 	var rv int
 	err = this.decode(&rv)
 	if err != nil {
-		err = fmt.Errorf(": %w", err)
 		panic(err)
 	}
 	return rv
@@ -68,7 +65,6 @@ func (this *CacheItem) Int64() int64 {
 	var rv int64
 	err = this.decode(&rv)
 	if err != nil {
-		err = fmt.Errorf(": %w", err)
 		panic(err)
 	}
 	return rv
@@ -79,7 +75,6 @@ func (this *CacheItem) Float64() float64 {
 	var rv float64
 	err = this.decode(&rv)
 	if err != nil {
-		err = fmt.Errorf(": %w", err)
 		panic(err)
 	}
 	return rv
@@ -90,7 +85,6 @@ func (this *CacheItem) String() string {
 	var rv string
 	err = this.decode(&rv)
 	if err != nil {
-		err = fmt.Errorf(": %w", err)
 		panic(err)
 	}
 	return rv
@@ -101,7 +95,6 @@ func (this *CacheItem) Bool() bool {
 	var rv bool
 	err = this.decode(&rv)
 	if err != nil {
-		err = fmt.Errorf(": %w", err)
 		panic(err)
 	}
 	return rv

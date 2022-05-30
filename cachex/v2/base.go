@@ -1,9 +1,6 @@
 package cachex
 
 import (
-	"fmt"
-	// "snippet/common"
-
 	"github.com/sp3c73r2038/go-x/cryptox/aes"
 )
 
@@ -47,14 +44,12 @@ func NewBaseCache(opts ...CacheOption) *BaseCache {
 func (this *BaseCache) Encode(v interface{}) (rv interface{}, err error) {
 	v, err = Encode(this.Encoding, v)
 	if err != nil {
-		err = fmt.Errorf("encode error: %w", err)
 		return
 	}
 
 	if this.Encryption {
 		v, err = aes.GCMEncrypt(this.Key, v.([]byte), nil)
 		if err != nil {
-			err = fmt.Errorf("encrypt error: %w", err)
 			return
 		}
 	}
@@ -69,7 +64,6 @@ func (this *BaseCache) Decode(v interface{}) (rv interface{}, err error) {
 		var b []byte
 		b, err = aes.GCMDecrypt(this.Key, v.([]byte), nil)
 		if err != nil {
-			err = fmt.Errorf("decrypt error: %w", err)
 			return
 		}
 		rv = b

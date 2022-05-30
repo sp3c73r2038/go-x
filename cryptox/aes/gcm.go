@@ -3,14 +3,15 @@ package aes
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 func GCMEncrypt(key, input, additional []byte) (rv []byte, err error) {
 	var block cipher.Block
 	block, err = aes.NewCipher(key)
 	if err != nil {
-		err = fmt.Errorf("create cipher: %w", err)
+		err = errors.Wrap(err, "create cipher")
 		return
 	}
 
@@ -19,7 +20,7 @@ func GCMEncrypt(key, input, additional []byte) (rv []byte, err error) {
 	var c cipher.AEAD
 	c, err = cipher.NewGCM(block)
 	if err != nil {
-		err = fmt.Errorf("create gcm: %w", err)
+		err = errors.Wrap(err, "create gcm")
 		return
 	}
 
@@ -35,14 +36,14 @@ func GCMDecrypt(key, input, additional []byte) (rv []byte, err error) {
 	var block cipher.Block
 	block, err = aes.NewCipher(key)
 	if err != nil {
-		err = fmt.Errorf("create cipher: %w", err)
+		err = errors.Wrap(err, "create cipher")
 		return
 	}
 
 	var c cipher.AEAD
 	c, err = cipher.NewGCM(block)
 	if err != nil {
-		err = fmt.Errorf("create gcm: %w", err)
+		err = errors.Wrap(err, "create gcm")
 		return
 	}
 

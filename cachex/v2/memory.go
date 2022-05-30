@@ -1,9 +1,7 @@
 package cachex
 
 import (
-	"fmt"
 	"time"
-	// "snippet/common"
 )
 
 type MemoryCache struct {
@@ -43,7 +41,6 @@ func (this *MemoryCache) Set(k string, v interface{}, opts ...Opt) (err error) {
 
 	v, err = this.base.Encode(v)
 	if err != nil {
-		err = fmt.Errorf("encode error: %w", err)
 		return
 	}
 
@@ -64,7 +61,6 @@ func (this *MemoryCache) Get(k string, opts ...Opt) (rv *CacheItem, err error) {
 	var v interface{}
 	v, err = this.base.Decode(item.value)
 	if err != nil {
-		err = fmt.Errorf("decode error: %w", err)
 		return
 	}
 	item.value = v
