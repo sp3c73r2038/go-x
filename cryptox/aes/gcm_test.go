@@ -23,7 +23,7 @@ func TestGCM(t *testing.T) {
 
 	var salt []byte
 	if len(key) <= 0 {
-		salt = RandBytes(16)
+		salt, _ = RandBytes(16)
 		var kb = append(salt, []byte(pass)...)
 		common.Logger.Debug("key: ", base64.StdEncoding.EncodeToString(kb))
 	} else {
@@ -42,9 +42,9 @@ func TestGCM(t *testing.T) {
 	common.Logger.Debug(
 		"aes key: ", base64.StdEncoding.EncodeToString(akey.Bytes()))
 
-	var payload = RandBytes(16)
-	var ps string
-	ps = base64.StdEncoding.EncodeToString(payload)
+	var payload []byte
+	payload, _ = RandBytes(16)
+	var ps = base64.StdEncoding.EncodeToString(payload)
 
 	common.Logger.Debug("payload: ", ps)
 

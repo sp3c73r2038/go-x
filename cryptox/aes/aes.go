@@ -6,11 +6,11 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
-	"errors"
 	"io"
 
 	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/pkg/errors"
 	"github.com/sp3c73r2038/go-x/common"
 )
 
@@ -42,8 +42,19 @@ func CreateAESKey(key, salt []byte, keylen int) *AESKey {
 	}
 }
 
-func GenAESKey(keylen int) *AESKey {
-	return CreateAESKey(RandBytes(16), RandBytes(16), keylen)
+func GenAESKey(keylen int) (rv *AESKey, err error) {
+	var key []byte
+	var salt []byte
+	key, err = RandBytes(16)
+	if err != nil {
+		return
+	}
+	salt, err = RandBytes(16)
+	if err != nil {
+		return
+	}
+	rv = CreateAESKey(key, salt, keylen)
+	return
 }
 
 var (
@@ -111,7 +122,7 @@ func PKCS7Pad(b []byte, blocksize int) ([]byte, error) {
 	if blocksize <= 0 {
 		return nil, ErrInvalidBlockSize
 	}
-	if b == nil || len(b) == 0 {
+	if len(b) == 0 {
 		return nil, ErrInvalidPKCS7Data
 	}
 	n := blocksize - (len(b) % blocksize)
@@ -128,7 +139,7 @@ func PKCS7Unpad(b []byte, blocksize int) ([]byte, error) {
 	if blocksize <= 0 {
 		return nil, ErrInvalidBlockSize
 	}
-	if b == nil || len(b) == 0 {
+	if len(b) == 0 {
 		return nil, ErrInvalidPKCS7Data
 	}
 	if len(b)%blocksize != 0 {
@@ -147,10 +158,13 @@ func PKCS7Unpad(b []byte, blocksize int) ([]byte, error) {
 	return b[:len(b)-n], nil
 }
 
-func RandBytes(l int) []byte {
-	var rv = make([]byte, l)
-	rand.Read(rv)
-	return rv
+func RandBytes(l int) (rv []byte, err error) {
+	rv = make([]byte, l)
+	_, err = rand.Read(rv)
+	if err != nil {
+		err = errors.Wrap(err, "read rand")
+	}
+	return
 }
 
 // padding key to aes qualified key length (16/32/48)

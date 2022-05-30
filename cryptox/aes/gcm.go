@@ -15,7 +15,11 @@ func GCMEncrypt(key, input, additional []byte) (rv []byte, err error) {
 		return
 	}
 
-	var nonce = RandBytes(12)
+	var nonce []byte
+	nonce, err = RandBytes(12)
+	if err != nil {
+		return
+	}
 
 	var c cipher.AEAD
 	c, err = cipher.NewGCM(block)

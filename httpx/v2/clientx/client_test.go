@@ -1,7 +1,6 @@
 package clientx
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	urllib "net/url"
@@ -19,7 +18,7 @@ func TestBuild(t *testing.T) {
 	var resp *Response
 	resp, err = client.Get("http://localhost")
 	if err != nil {
-		fmt.Errorf(": %w", err)
+		t.Errorf("get error")
 		return
 	}
 	defer resp.Close()

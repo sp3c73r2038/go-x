@@ -3,13 +3,13 @@ package common
 import (
 	"fmt"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func AskPassword(prompt string) (rv string, err error) {
 	fmt.Print(prompt)
 	var pass []byte
-	pass, err = terminal.ReadPassword(1)
+	pass, err = term.ReadPassword(1)
 	fmt.Println("")
 	if err != nil {
 		// cannot get key from console input, exit...

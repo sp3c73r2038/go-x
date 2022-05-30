@@ -18,7 +18,7 @@ func TestFile(t *testing.T) {
 		WithEncryption([]byte("12345678901234567890")),
 	)
 	cache = file
-	cache.Get("k0")
+	_, _ = cache.Get("k0")
 
 	// empty
 	item, err = file.Get("k1")
