@@ -1,24 +1,26 @@
 package clientx
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	urllib "net/url"
 	"testing"
 	"time"
 
-	"github.com/sp3c73r2038/go-x/httpx"
 	"github.com/stretchr/testify/assert"
-	// "snippet/common"
+
+	// "github.com/sp3c73r2038/go-x/common"
+	"github.com/sp3c73r2038/go-x/httpx"
 )
 
 func TestBuild(t *testing.T) {
 	var err error
-	var client = NewHTTPClientBuilder().SetTimeout(time.Second * 10).Build()
+	var client HTTPClientv2 = NewHTTPClientBuilder().SetTimeout(time.Second * 10).Build()
 	var resp *Response
 	resp, err = client.Get("http://localhost")
 	if err != nil {
-		t.Errorf("get error")
+		fmt.Errorf(": %w", err)
 		return
 	}
 	defer resp.Close()
@@ -57,26 +59,26 @@ func TestCreateReq(t *testing.T) {
 	assert.Equal(t, 1, len(req.Header))
 	assert.Equal(t, "V", req.Header.Get("H"))
 
-	// // 2. with form
-	// option = DefaultReqOptions()
-	// WithHeader("H", "V")(option)
-	// WithMethod(http.MethodPut)(option)
-	// WithForm(map[string]string{"p1": "v1"})(option)
-	// req, err = client.createReq("", option)
-	// if err != nil {
-	// 	t.Errorf(": %v", err)
-	// 	return
-	// }
-	// assert.NotNil(t, req)
-	// assert.Equal(t, http.MethodPut, req.Method)
-	// assert.NotNil(t, req.Body)
-	// assert.Equal(t, MIME_FORM, req.Header.Get("Content-Type"))
-	// b, err = io.ReadAll(req.Body)
-	// if err != nil {
-	// 	t.Errorf(": %v", err)
-	// 	return
-	// }
-	// assert.Equal(t, []byte("p1=v1"), b)
+	// 2. with form
+	option = DefaultReqOptions()
+	WithHeader("H", "V")(option)
+	WithMethod(http.MethodPut)(option)
+	WithForm(map[string]string{"p1": "v1"})(option)
+	req, err = client.createReq("", option)
+	if err != nil {
+		t.Errorf(": %v", err)
+		return
+	}
+	assert.NotNil(t, req)
+	assert.Equal(t, http.MethodPut, req.Method)
+	assert.NotNil(t, req.Body)
+	assert.Equal(t, MIME_FORM, req.Header.Get("Content-Type"))
+	b, err = io.ReadAll(req.Body)
+	if err != nil {
+		t.Errorf(": %v", err)
+		return
+	}
+	assert.Equal(t, []byte("p1=v1"), b)
 
 	// 2. with json
 	option = DefaultReqOptions()
@@ -135,4 +137,5 @@ func TestCreateReq(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "Bearer bearertoken", req.Header.Get("Authorization"))
+
 }

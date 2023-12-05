@@ -9,7 +9,8 @@ import (
 	urllib "net/url"
 	"strings"
 
-	"github.com/pkg/errors"
+	// "github.com/stretchr/testify/assert"
+	// "github.com/sp3c73r2038/go-x/common"
 	"github.com/sp3c73r2038/go-x/httpx"
 )
 
@@ -18,7 +19,7 @@ type HTTPClientv2 interface {
 	Delete(string, ...ReqOption) (*Response, error)
 	Get(string, ...ReqOption) (*Response, error)
 	Head(string, ...ReqOption) (*Response, error)
-	Option(string, ...ReqOption) (*Response, error)
+	Options(string, ...ReqOption) (*Response, error)
 	Patch(string, ...ReqOption) (*Response, error)
 	Post(string, ...ReqOption) (*Response, error)
 	Put(string, ...ReqOption) (*Response, error)
@@ -58,10 +59,11 @@ func (this *SimpleHTTPClient) createReq(url string, option *ReqOptions) (rv *htt
 					var enc = json.NewEncoder(&buf)
 					err = enc.Encode(option.Object)
 					if err != nil {
+						fmt.Errorf("encode json: %w", err)
 						return
 					}
 
-					body = &buf
+					body = io.NopCloser(&buf)
 				// case "application/x-yaml":
 				// case "text/yaml":
 				case MIME_FORM:
@@ -72,6 +74,8 @@ func (this *SimpleHTTPClient) createReq(url string, option *ReqOptions) (rv *htt
 					}
 					body = strings.NewReader(form.Encode())
 				default:
+					err = fmt.Errorf("content-type %s not implemented", ct)
+					return
 				}
 			}
 		}
@@ -79,7 +83,7 @@ func (this *SimpleHTTPClient) createReq(url string, option *ReqOptions) (rv *htt
 
 	rv, err = http.NewRequest(option.Method, url, body)
 	if err != nil {
-		err = errors.Wrap(err, "create req")
+		fmt.Errorf("create req: %w", err)
 		return
 	}
 
@@ -125,13 +129,25 @@ func (this *SimpleHTTPClient) Do(
 
 	req, err = this.createReq(url, option)
 	if err != nil {
-		err = errors.Wrap(err, "create req")
+		fmt.Errorf("create req: %w", err)
 		return
 	}
 
+	// common.Logger.Debug(req.Method)
+	// common.Logger.Debug(req.URL)
+	// common.Logger.Debug(req.Header)
+	//
+	// if req.Body != nil {
+	// 	var b []byte
+	// 	b, _ = io.ReadAll(req.Body)
+	// 	common.Logger.Debug(string(b))
+	//
+	// 	req.Body = io.NopCloser(bytes.NewBuffer(b))
+	// }
+
 	resp, err = this.client.Do(req)
 	if err != nil {
-		err = errors.Wrap(err, "do req")
+		fmt.Errorf("do req: %w", err)
 		return
 	}
 
@@ -150,6 +166,7 @@ func (this *SimpleHTTPClient) Do(
 
 func (this *SimpleHTTPClient) Get(
 	url string, opts ...ReqOption) (rv *Response, err error) {
+	opts = append(opts, WithMethod(http.MethodGet))
 	return this.Do(url, opts...)
 }
 
@@ -186,6 +203,18 @@ func (this *SimpleHTTPClient) Post(
 func (this *SimpleHTTPClient) Delete(
 	url string, opts ...ReqOption) (rv *Response, err error) {
 	opts = append(opts, WithMethod(http.MethodDelete))
+	return this.Do(url, opts...)
+}
+
+func (this *SimpleHTTPClient) Options(
+	url string, opts ...ReqOption) (rv *Response, err error) {
+	opts = append(opts, WithMethod(http.MethodOptions))
+	return this.Do(url, opts...)
+}
+
+func (this *SimpleHTTPClient) Trace(
+	url string, opts ...ReqOption) (rv *Response, err error) {
+	opts = append(opts, WithMethod(http.MethodTrace))
 	return this.Do(url, opts...)
 }
 

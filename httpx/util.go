@@ -1,11 +1,12 @@
 package httpx
 
 import (
-	"log"
+	"fmt"
+	"path"
+	"strings"
 )
 
-func Must(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+func JoinURL(base string, paths ...string) string {
+	p := path.Join(paths...)
+	return fmt.Sprintf("%s/%s", strings.TrimRight(base, "/"), strings.TrimLeft(p, "/"))
 }

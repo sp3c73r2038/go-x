@@ -3,7 +3,7 @@ package cachex
 import (
 	"fmt"
 	"time"
-	// "snippet/common"
+	// "github.com/sp3c73r2038/go-x/common"
 )
 
 const ENCODING_JSON = "json"

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	// "snippet/common"
+	// "github.com/sp3c73r2038/go-x/common"
 )
 
 type testObject struct {

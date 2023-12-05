@@ -2,13 +2,17 @@ package clientx
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 	urllib "net/url"
+	"os"
 	"time"
 
 	// "github.com/stretchr/testify/assert"
+	"github.com/sp3c73r2038/go-x/common"
 	"github.com/sp3c73r2038/go-x/httpx"
 )
 
@@ -17,12 +21,42 @@ type HTTPClientBuilder struct {
 	proxy   *urllib.URL
 	skipTLS bool
 	auth    httpx.Auth
+	rootCAs *x509.CertPool
 }
 
 func NewHTTPClientBuilder() *HTTPClientBuilder {
 	return &HTTPClientBuilder{
 		timeout: time.Second * 60,
 	}
+}
+
+func NewCertPoolFromPEM(b []byte) (rv *x509.CertPool, err error) {
+	var ok bool
+
+	rv = x509.NewCertPool()
+	ok = rv.AppendCertsFromPEM(b)
+	if !ok {
+		err = errors.New("can't append certs from pem")
+	}
+	return
+}
+
+func NewCertPoolFromFile(in string) (rv *x509.CertPool, err error) {
+	var ok = false
+
+	rv = x509.NewCertPool()
+
+	var b []byte
+	b, err = os.ReadFile(in)
+	if err != nil {
+		return
+	}
+
+	ok = rv.AppendCertsFromPEM(b)
+	if !ok {
+		err = errors.New("can't append certs from pem")
+	}
+	return
 }
 
 func (this *HTTPClientBuilder) SetTimeout(
@@ -49,12 +83,17 @@ func (this *HTTPClientBuilder) SetSkipTLSVerify(
 	return this
 }
 
+func (this *HTTPClientBuilder) SetCA(ca *x509.CertPool) (rv *HTTPClientBuilder) {
+	this.rootCAs = ca
+	return this
+}
+
 func (this *HTTPClientBuilder) Build() (rv *SimpleHTTPClient) {
 	var err error
 	var jar *cookiejar.Jar
 	jar, err = cookiejar.New(nil)
 
-	httpx.Must(err)
+	common.Must(err)
 
 	rv = &SimpleHTTPClient{
 		auth: this.auth,
@@ -68,6 +107,7 @@ func (this *HTTPClientBuilder) Build() (rv *SimpleHTTPClient) {
 				Proxy: http.ProxyURL(this.proxy),
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: this.skipTLS,
+					RootCAs:            this.rootCAs,
 				},
 			},
 			CheckRedirect: func(
